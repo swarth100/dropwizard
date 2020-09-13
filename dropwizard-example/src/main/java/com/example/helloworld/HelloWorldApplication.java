@@ -16,6 +16,7 @@ import com.example.helloworld.resources.PersonResource;
 import com.example.helloworld.resources.ProtectedResource;
 import com.example.helloworld.resources.ViewResource;
 import com.example.helloworld.tasks.EchoTask;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.auth.AuthDynamicFeature;
@@ -29,10 +30,15 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import java.util.Map;
 
+@OpenAPIDefinition
 public class HelloWorldApplication extends Application<HelloWorldConfiguration> {
     public static void main(String[] args) throws Exception {
         new HelloWorldApplication().run(args);
@@ -99,5 +105,15 @@ public class HelloWorldApplication extends Application<HelloWorldConfiguration> 
         environment.jersey().register(new PeopleResource(dao));
         environment.jersey().register(new PersonResource(dao));
         environment.jersey().register(new FilteredResource());
+
+        // Register OAS resource to serve spec
+        environment.jersey().register(new OpenApiResource().openApiConfiguration(new SwaggerConfiguration().prettyPrint(true)));
+
+        // Configure ordering
+        Json.mapper().addMixIn(io.swagger.v3.oas.models.PathItem.class, AlphabeticallySorted.class);
     }
+
+    /* Mixin to ensure custom ordering of certain properties */
+    @JsonPropertyOrder({"post","get","put","delete"})
+    public abstract static class AlphabeticallySorted {}
 }

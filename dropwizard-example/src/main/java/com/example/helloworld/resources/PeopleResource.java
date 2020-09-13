@@ -7,6 +7,7 @@ import io.dropwizard.hibernate.UnitOfWork;
 import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -20,6 +21,13 @@ public class PeopleResource {
 
     public PeopleResource(PersonDAO peopleDAO) {
         this.peopleDAO = peopleDAO;
+    }
+
+    @PUT
+    @UnitOfWork
+    public Person putPerson(@Valid Person person) {
+        // Method just to test serialisation of Put Operations
+        return peopleDAO.create(person);
     }
 
     @POST
